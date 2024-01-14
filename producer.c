@@ -3,13 +3,13 @@
 #include <string.h>
 #include "librdkafka/rdkafka.h"
 
-const int TOTAL_MSG = 1000000;
+const int TOTAL_MSG = 10000000;
 
 static void
 dr_msg_cb(rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, void *opaque)
 {
   if (rkmessage->err)
-    fprintf(stderr, "%% Message delivery failed: %s\n",
+    fprintf(stdout, "%% Message delivery failed: %s\n",
             rd_kafka_err2str(rkmessage->err));
   else
     fprintf(stderr,
@@ -26,8 +26,6 @@ typedef struct
 
 int main(void)
 {
-  rd_kafka_t *rk;
-  rd_kafka_conf_t *conf;
   char errstr[512];
   char msg[512];
 
@@ -36,7 +34,7 @@ int main(void)
       .topic = "my_topic",
   };
 
-  conf = rd_kafka_conf_new();
+  rd_kafka_conf_t *conf = rd_kafka_conf_new();
 
   if (rd_kafka_conf_set(conf, "bootstrap.servers", kafka_config.broker, errstr,
                         sizeof(errstr)) != RD_KAFKA_CONF_OK)
@@ -47,7 +45,7 @@ int main(void)
 
   rd_kafka_conf_set_dr_msg_cb(conf, dr_msg_cb);
 
-  rk = rd_kafka_new(RD_KAFKA_PRODUCER, conf, errstr, sizeof(errstr));
+  rd_kafka_t *rk = rd_kafka_new(RD_KAFKA_PRODUCER, conf, errstr, sizeof(errstr));
   if (!rk)
   {
     fprintf(stderr, "could not  to create new producer: %s\n",
@@ -94,7 +92,7 @@ int main(void)
     rd_kafka_poll(rk, 0);
   }
 
-  fprintf(stderr, "%% Flushing final messages..\n");
+  fprintf(stdout, "%% Flushing final messages..\n");
   rd_kafka_flush(rk, 10 * 1000);
 
   if (rd_kafka_outq_len(rk) > 0)
