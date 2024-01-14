@@ -2,6 +2,8 @@
 #include <signal.h>
 #include <string.h>
 #include "librdkafka/rdkafka.h"
+#define PARSER_IMPLEMENTATION
+#include "parser.h"
 
 const int TOTAL_MSG = 10000000;
 
@@ -20,9 +22,43 @@ dr_msg_cb(rd_kafka_t *rk, const rd_kafka_message_t *rkmessage, void *opaque)
 
 typedef struct
 {
-  const char *broker;
-  const char *topic;
+  char *broker;
+  char *topic;
 } Kafka;
+
+typedef struct
+{
+  size_t group;
+  String_View text;
+} Data;
+
+typedef struct
+{
+  Data *items;
+  size_t count;
+  size_t capacity;
+} Datas;
+
+Datas parse_csv_data(String_View content)
+{
+  size_t lines_count = 0;
+  Datas datas = {0};
+
+  for (; content.count > 0; ++lines_count)
+  {
+    String_View line = sv_chop_by_delim(&content, '\n');
+    if (lines_count == 0)
+      continue;
+    String_View group = sv_chop_by_delim(&line, ',');
+    size_t group_idx = *group.data - '0' - 1;
+
+    da_append(&datas, ((Data){
+                             .group = group_idx,
+                             .text = line,
+                         }));
+  }
+  return datas;
+}
 
 int main(void)
 {
@@ -53,7 +89,18 @@ int main(void)
     return 1;
   }
 
-  for(int i = 0;i < TOTAL_MSG;++i)
+  // NOTE: READ WHOLE DATA
+  const char *csv_path = "./data/train.csv";
+  String_Builder csv_content = {0};
+  if(!read_entire_file(csv_path, &csv_content)) return 1;
+
+  String_View sv = {
+    .count = csv_content.count, 
+    .data = csv_content.items,
+  };
+  Datas csv_datas = parse_csv_data(sv);
+
+  for (int i = 0; i < TOTAL_MSG; ++i)
   {
     sprintf(msg, "message -> %d", i);
     size_t len = strlen(msg);
