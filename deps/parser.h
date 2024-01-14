@@ -95,7 +95,7 @@ bool read_entire_file(const char *path, String_Builder *sb) {
   size_t new_count = sb->count + m;
   if (new_count > sb->capacity) {
     sb->items = realloc(sb->items, new_count);
-    sb->capacity = new_cunt;
+    sb->capacity = new_count;
   }
 
   fread(sb->items + sb->count, m, 1, f);
