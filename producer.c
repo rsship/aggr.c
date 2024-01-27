@@ -1,9 +1,9 @@
-#include "librdkafka/rdkafka.h"
-#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #define PARSER_IMPLEMENTATION
 #include "parser.h"
+
+#include "librdkafka/rdkafka.h"
 
 const int TOTAL_MSG = 10000000;
 

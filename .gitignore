@@ -5,3 +5,5 @@ data
 test
 test.c
 compile_commands.json
+librdkafka
+.cache
