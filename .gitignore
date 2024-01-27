@@ -1,7 +1,7 @@
-.vscode
 consumer
 producer
 archive.zip
 data
 test
 test.c
+compile_commands.json

@@ -25,7 +25,6 @@ typedef struct {
   } while (0)
 
 String_View sv_chop_by_delim(String_View *sv, char delim);
-String_View sv_from_parts(const char *data, size_t count);
 
 String_View sv_chop_by_delim(String_View *sv, char delim) {
   size_t i = 0;
@@ -33,7 +32,10 @@ String_View sv_chop_by_delim(String_View *sv, char delim) {
     i += 1;
   }
 
-  String_View result = sv_from_parts(sv->data, i);
+  String_View result = {
+      .count = i,
+      .data = sv->data,
+  };
 
   if (i < sv->count) {
     sv->count -= i + 1;
@@ -46,12 +48,6 @@ String_View sv_chop_by_delim(String_View *sv, char delim) {
   return result;
 }
 
-String_View sv_from_parts(const char *data, size_t count) {
-  String_View sv;
-  sv.count = count;
-  sv.data = data;
-  return sv;
-}
 typedef struct {
   char *items;
   size_t count;
